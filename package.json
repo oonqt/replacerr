@@ -1,0 +1,18 @@
+{
+  "name": "sonarr-radarr-failed-download-remover",
+  "version": "1.0.0",
+  "description": "Automatically remove downloads that haven't progressed at all in over X amount of time from Sonarr and Radarr",
+  "main": "main.js",
+  "scripts": {
+    "start": "node .",
+    "dev": "node --env-file=.env ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@jc21/radarr-api": "^0.1.1",
+    "@jc21/sonarr-api": "^0.1.1",
+    "@robertklep/qbittorrent": "^1.0.1"
+  }
+}

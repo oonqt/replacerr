@@ -5,32 +5,49 @@ const qbit = new qBittorrentClient(process.env.QBIT_URL, process.env.QBIT_USER, 
 const check = async () => {
     log('Checking...');
 
-    let torrents = await qbit.torrents.info();
-    let movies = await radarrRequest('queue/details');
-    let episodes = await sonarrRequest('queue/details');
+    try {
+        let torrents = await qbit.torrents.info();
+        let movies = await radarrRequest('queue/details');
+        let episodes = await sonarrRequest('queue/details');
 
-    for (episode of episodes) {
-        let torrent = torrents.filter(torrent => {
-            return episode.downloadId.toLowerCase() === torrent.hash;
-        });
+        movies.forEach(movie => movie.type = 'movie');
+        episodes.forEach(episode => episode.type = 'episode');
 
-        if (torrent) {
+        let media = [...movies, ...episodes];
 
+        for (item of media) {
+            let torrent = torrents.filter(torrent => {
+                return item.downloadId.toLowerCase() === torrent.hash;
+            })[0];
+
+            if (torrent) {
+                let torrent = torrents.filter(torrent => {
+                    return item.downloadId.toLowerCase() === torrent.hash;
+                })[0];
+
+                if (torrent) {
+                    if (((Date.now() / 1000) - torrent.seen_complete) > process.env.MAX_LAST_SEEN_SECONDS && torrent.downloaded === 0) {
+                        log(`Removing ${torrent.content_path}, type: ${item.type}`);
+
+                        if (item.type === 'movie') {
+                            await radarrRequest(`queue/${item.id}`, 'DELETE', [{ name: 'blocklist', value: true }]);
+                        } else if (item.type === 'episode') {
+                            await sonarrRequest(`queue/${item.id}`, 'DELETE', [{ name: 'blocklist', value: true }]);
+                        }
+
+                        log('Successfully removed from sonarr. A search has been started and a replacement should begin downloading shortly');
+                    }
+                }
+            }
         }
+    } catch (err) {
+        log(err);
     }
 
-    for (movie of movies) {
-        let torrent = torrents.filter(torrent => {
-            return movie.downloadId.toLowerCase() === torrent.hash;
-        });
-
-        if (torrent) {
-            console.log(torrent);    
-        }
-    }
+    setTimeout(check, process.env.CHECK_INTERVAL_SECONDS * 1000);
 }
 
-const log = msg => console.log(`${new Date().toISOString()}: ${msg}`);
+const log = (...msg) => console.log(new Date().toISOString(), ...msg);
 
 const radarrRequest = async (route, method, query, body) => {
     const url = new URL(`${process.env.RADARR_URL}/api/v3/${route}`);
@@ -65,7 +82,5 @@ const sonarrRequest = async (route, method, query, body) => {
 }
 
 log('Starting application...');
-
-setInterval(check, process.env.CHECK_INTERVAL_SECONDS * 1000);
 
 check();

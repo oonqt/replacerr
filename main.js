@@ -20,7 +20,7 @@ const check = async () => {
                 return item.downloadId.toLowerCase() === torrent.hash;
             })[0];
 
-            if (torrent && item.status === 'downloading') {
+            if (torrent) {
                 log(`Identified torrent downloading ${item.title} with ID ${item.downloadId}`);
 
                 if (((Date.now() / 1000) - torrent.seen_complete) > process.env.MAX_LAST_SEEN_SECONDS && torrent.downloaded === 0) {

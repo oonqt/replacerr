@@ -20,23 +20,19 @@ const check = async () => {
                 return item.downloadId.toLowerCase() === torrent.hash;
             })[0];
 
-            if (torrent) {
-                let torrent = torrents.filter(torrent => {
-                    return item.downloadId.toLowerCase() === torrent.hash;
-                })[0];
+            if (torrent && item.status === 'downloading') {
+                log(`Identified torrent downloading ${item.title} with ID ${item.downloadId}`);
 
-                if (torrent) {
-                    if (((Date.now() / 1000) - torrent.seen_complete) > process.env.MAX_LAST_SEEN_SECONDS && torrent.downloaded === 0) {
-                        log(`Removing ${torrent.content_path}, type: ${item.type}`);
+                if (((Date.now() / 1000) - torrent.seen_complete) > process.env.MAX_LAST_SEEN_SECONDS && torrent.downloaded === 0) {
+                    log(`Removing ${torrent.content_path}, type: ${item.type}`);
 
-                        if (item.type === 'movie') {
-                            await radarrRequest(`queue/${item.id}`, 'DELETE', [{ name: 'blocklist', value: true }]);
-                        } else if (item.type === 'episode') {
-                            await sonarrRequest(`queue/${item.id}`, 'DELETE', [{ name: 'blocklist', value: true }]);
-                        }
-
-                        log('Successfully removed from sonarr. A search has been started and a replacement should begin downloading shortly');
+                    if (item.type === 'movie') {
+                        await radarrRequest(`queue/${item.id}`, 'DELETE', [{ name: 'blocklist', value: true }]);
+                    } else if (item.type === 'episode') {
+                        await sonarrRequest(`queue/${item.id}`, 'DELETE', [{ name: 'blocklist', value: true }]);
                     }
+
+                    log('Successfully removed from sonarr. A search has been started and a replacement should begin downloading shortly');
                 }
             }
         }

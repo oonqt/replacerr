@@ -1,11 +1,12 @@
 const { qBittorrentClient } = require('@robertklep/qbittorrent');
 const axios = require('axios');
-const qbit = new qBittorrentClient(process.env.QBIT_URL, process.env.QBIT_USER, process.env.QBIT_PASS);
 
 const check = async () => {
     log('Checking...');
-
+    
     try {
+        let qbit = new qBittorrentClient(process.env.QBIT_URL, process.env.QBIT_USER, process.env.QBIT_PASS);
+
         let torrents = await qbit.torrents.info();
         let movies = await radarrRequest('queue/details');
         let episodes = await sonarrRequest('queue/details');

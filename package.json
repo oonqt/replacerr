@@ -12,7 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "@robertklep/qbittorrent": "^1.0.1",
-    "axios": "^1.6.8"
+    "axios": "^1.6.8",
+    "discord-webhook-node": "^1.1.8"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"

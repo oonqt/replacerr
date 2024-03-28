@@ -1,5 +1,8 @@
 const { qBittorrentClient } = require('@robertklep/qbittorrent');
+const { Webhook } = require('discord-webhook-node');
 const axios = require('axios');
+
+const hook = new Webhook(process.env.DISCORD_WEBHOOK);
 
 const check = async () => {
     log('Checking...');
@@ -33,6 +36,8 @@ const check = async () => {
                         await sonarrRequest(`queue/${item.id}`, 'DELETE', [{ name: 'blocklist', value: true }]);
                     }
 
+                    hook.send(`Removed ${item.title}. A search for a replacement has been started`).catch(log);
+                    
                     log('Successfully removed from sonarr. A search has been started and a replacement should begin downloading shortly');
                 }
             }

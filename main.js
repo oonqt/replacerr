@@ -24,8 +24,12 @@ const check = async () => {
                 return item.downloadId.toLowerCase() === torrent.hash;
             })[0];
 
+            log(torrent);
+
             if (torrent) {
                 log(`Identified torrent downloading ${item.title} with ID ${item.downloadId}`);
+
+                hook.send(`Removed ${item.title}. It was added ${new Date(torrent.added_on).toLocaleString()}, but never became seen. A search for a replacement has been started`).catch(log);
 
                 if (((Date.now() / 1000) - torrent.seen_complete) > process.env.MAX_LAST_SEEN_SECONDS && torrent.downloaded === 0) {
                     log(`Removing ${torrent.content_path}, type: ${item.type}`);
@@ -36,8 +40,6 @@ const check = async () => {
                         await sonarrRequest(`queue/${item.id}`, 'DELETE', [{ name: 'blocklist', value: true }]);
                     }
 
-                    hook.send(`Removed ${item.title}. A search for a replacement has been started`).catch(log);
-                    
                     log('Successfully removed from sonarr. A search has been started and a replacement should begin downloading shortly');
                 }
             }

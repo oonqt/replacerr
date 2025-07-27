@@ -4,10 +4,10 @@ const { version } = require('./package.json');
 const Logger = require('./logger');
 const ArrClient = require('./arrclient');
 
-require('dotenv').config();
+if (process.env.NODE_ENV === 'development') require('dotenv').config();
 
 const { QBIT_URL, DEBUG, QBIT_USER, QBIT_PASS, RADARR_URL, RADARR_API_KEY, SONARR_URL, SONARR_API_KEY, CHECK_INTERVAL, MAX_LAST_SEEN, DISCORD_WEBHOOK } = process.env;
-const hook = new Webhook(process.env.DISCORD_WEBHOOK);
+const hook = new Webhook(DISCORD_WEBHOOK);
 const log = new Logger(DEBUG);
 
 const check = async () => {
@@ -27,36 +27,34 @@ const check = async () => {
         const globalQueue = [...movieQueue, ...episodeQueue];
 
         for (item of globalQueue) {
-            let torrent = torrents.find(torrent => {
-                return item.downloadId.toLowerCase() === torrent.hash;
-            });
+            let torrent = torrents.find(torrent => item.downloadId.toLowerCase() === torrent.hash);
 
             if (torrent) {
                 log.info(`Identified torrent downloading for ${item.title} with ID ${item.downloadId}`);
 
-                const epochMinutes = Date.now() / 1000 / 60;
-                log.debug(epochMinutes - torrent.seen_complete);
-                if ((epochMinutes - torrent.seen_complete) > MAX_LAST_SEEN) {
-                    log(`Removing ${torrent.content_path}, type: ${item.type}`);
-                    
+                const lastSeenSeconds = (Date.now() / 1000) - torrent.seen_complete;
+
+                if (lastSeenSeconds > MAX_LAST_SEEN) {
+                    log.info(`Beginning removal of ${item.title} (${item.type}). Last seen complete reported ${Math.round(lastSeenSeconds / 60 / 60)} hours ago.`);
+
                     const queryParams = [
                         { name: 'blocklist', value: true },
                         { name: 'removeFromClient', value: true },
                         { name: 'skipRedownload', value: false },
                         { name: 'changeCategory', value: false }
                     ];
-                    
+
                     switch (item.type) {
                         case 'movie':
                             // await radarr.request(`queue/${item.id}`, 'DELETE', queryParams);
                             break;
                         case 'episode':
                             // await sonarr.request(`queue/${item.id}`, 'DELETE', queryParams);
-                            break;  
-                        }
-                            
-                    log('Successfully removed from sonarr. A search has been started and a replacement should begin downloading shortly');
-                    hook.send(`Removed \`${item.title}\`. It was added \`${new Date(torrent.added_on).toLocaleString()}\`, but never became seen. The previous torrent has been blacklisted and a search for a replacement has started`).catch(log);
+                            break;
+                    }
+
+                    log.info('Successfully removed. Torrent has been blacklisted and replacement search started.');
+                    hook.send(`Removed \`${item.title} (${item.type})\` It was last seen complete ${Math.round(lastSeenSeconds / 60 / 60)} hours ago`).catch(log);
                 }
             } else {
                 log.error(`No torrent found for ${item.title} with ID ${item.downloadId}.`);

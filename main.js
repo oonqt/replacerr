@@ -6,20 +6,18 @@ const hook = new Webhook(process.env.DISCORD_WEBHOOK);
 
 const check = async () => {
     log('Checking...');
-    
+
     try {
-        let qbit = new qBittorrentClient(process.env.QBIT_URL, process.env.QBIT_USER, process.env.QBIT_PASS);
+        const qbit = new qBittorrentClient(process.env.QBIT_URL, process.env.QBIT_USER, process.env.QBIT_PASS);
+        const radarr = new ArrClient(process.env.RADARR_URL, process.env.RADARR_API_KEY);
+        const sonarr = new ArrClient(process.env.SONARR_URL, process.env.SONARR_API_KEY);
 
-        let torrents = await qbit.torrents.info();
-        let movies = await radarrRequest('queue/details');
-        let episodes = await sonarrRequest('queue/details');
+        const [torrents, movieQueue, episodeQueue] = await Promise.all(qbit.torrents.info(), radarr.request('/queue/details'), sonarr.request('/queue/details'));
+        movieQueue.forEach(movie => movie.type = 'movie');
+        episodeQueue.forEach(episode => episode.type = 'episode');
+        const globalQueue = [...movieQueue, ...episodeQueue];
 
-        movies.forEach(movie => movie.type = 'movie');
-        episodes.forEach(episode => episode.type = 'episode');
-
-        let media = [...movies, ...episodes];
-
-        for (item of media) {
+        for (item of globalQueue) {
             let torrent = torrents.filter(torrent => {
                 return item.downloadId.toLowerCase() === torrent.hash;
             })[0];
@@ -51,38 +49,35 @@ const check = async () => {
     setTimeout(check, process.env.CHECK_INTERVAL_SECONDS * 1000);
 }
 
-const log = (...msg) => console.log(new Date().toISOString(), ...msg);
+class ArrClient {
+    constructor(url, key) {
+        this.appBase = `${url}/api/v3/`;
+        this.apiKey = key;
+    }
 
-const radarrRequest = async (route, method, query, body) => {
-    const url = new URL(`${process.env.RADARR_URL}/api/v3/${route}`);
+    request(route, method, query) {
+        return new Promise((resolve, reject) => {
+            const url = new URL(`${this.base}/${route}`);
 
-    if (query) query.forEach(param => url.searchParams.append(param.name, param.value));
+            url.searchParams.append('apiKey', this.apiKey);
 
-    url.searchParams.append('apikey', process.env.RADARR_API_KEY);
+            if (query) query.forEach(param => url.searchParams.append(param.name, param.value));
 
-    let res = await axios({
-        url,
-        method: method || 'GET',
-        body: body || null
-    });
-
-    return res.data;
+            axios({
+                url,
+                method: method || 'GET'
+            })
+                .then(res => resolve(res.data))
+                .catch(reject);
+        });
+    }
 }
 
-const sonarrRequest = async (route, method, query, body) => {
-    const url = new URL(`${process.env.SONARR_URL}/api/v3/${route}`);
-
-    if (query) query.forEach(param => url.searchParams.append(param.name, param.value));
-
-    url.searchParams.append('apikey', process.env.SONARR_API_KEY);
-
-    let res = await axios({
-        url,
-        method: method || 'GET',
-        body: body || null
-    });
-
-    return res.data;
+const log = (msg, webhookLog) => {
+    console.log(new Date().toISOString(), ...msg);
+    if (webhookLog) {
+        hook.send(msg).catch(err => log(err));
+    }
 }
 
 log('Starting application...');

@@ -5,10 +5,10 @@
   "main": "main.js",
   "scripts": {
     "start": "node .",
-    "dev": "nodemon --env-file=.env ."
+    "dev": "nodemon ."
   },
   "keywords": [],
-  "author": "",
+  "author": "oonqt",
   "license": "ISC",
   "dependencies": {
     "@robertklep/qbittorrent": "^1.0.1",

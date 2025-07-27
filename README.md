@@ -1,2 +1,3 @@
-# sonarr-radarr-failed-download-remover
-Automatically remove torrent downloads that haven't had full availability in over X amount of time from Sonarr and Radarr
+# Replacerr
+
+Automatically remove torrents or downloads that are stalled, missing metadata, or haven't been seen for an extended period according to the seen_completed parameter. Currently compatible with Sonarr, Radarr, and qBittorrent.

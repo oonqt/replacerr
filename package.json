@@ -1,7 +1,7 @@
 {
-  "name": "sonarr-radarr-failed-download-remover",
+  "name": "replacerr",
   "version": "1.0.0",
-  "description": "Automatically remove downloads that haven't progressed at all in over X amount of time from Sonarr and Radarr",
+  "description": "",
   "main": "main.js",
   "scripts": {
     "start": "node .",

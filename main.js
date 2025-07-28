@@ -25,10 +25,10 @@ const removeAndSearch = (type, id) => new Promise((resolve, reject) => {
 
     switch (type) {
         case 'movie':
-            // radarr.request(`queue/${id}`, 'DELETE', queryParams).then(resolve).catch(reject);
+            radarr.request(`queue/${id}`, 'DELETE', queryParams).then(resolve).catch(reject);
             break;
         case 'episode':
-            // sonarr.request(`queue/${id}`, 'DELETE', queryParams).then(resolve).catch(reject);
+            sonarr.request(`queue/${id}`, 'DELETE', queryParams).then(resolve).catch(reject);
             break;
     }
 });

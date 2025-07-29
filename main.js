@@ -72,6 +72,10 @@ const check = async () => {
                 log.info(`Identified torrent downloading for ${item.title} with ID ${item.downloadId}`);
 
                 if (torrent.downloaded === 0) { // catch-all for stalled downloads. after this we will rely on last seen complete to determine if a torrent is stalled for good and remove it.
+                    strikeData.stalled++;
+                    strikes.set(downloadId, strikeData);
+                    log.info(`Stalled download for ${item.title} (${item.type}) has been given a strike. Current strikes: ${currentStrikes + 1}/${MAX_STRIKES}.`);
+                    
                     if (strikeData.stalled >= MAX_STRIKES) {
                         log.info(`Removing stalled download for ${item.title} (${item.type}) due to ${strikeData.stalled} strikes.`);
                         
@@ -86,11 +90,6 @@ const check = async () => {
                             log.error('Failed to remove stalled download:', err);
                             await hook.send(`❌ Failed to remove \`${item.title} (${item.type})\`. Deletion attempt will be made again during next check.`).catch(log.error);
                         }
-                    } else {
-                        strikeData.stalled++;
-                        strikes.set(downloadId, strikeData);
-
-                        log.info(`Stalled download for ${item.title} (${item.type}) has been given a strike. Current strikes: ${currentStrikes + 1}/${MAX_STRIKES}.`);
                     }
                 } else if (lastSeenMinutes > MAX_LAST_SEEN) {
                     log.info(`Beginning removal of ${item.title} (${item.type}). Last seen complete reported ${Math.round(lastSeenMinutes / 60 / 60)} hours ago.`);
@@ -114,6 +113,7 @@ const check = async () => {
                         strikeData.fakePeer = 0;
                     } else { 
                         strikeData.fakePeer++;
+                        log.info(`${item.title} (${item.type}) has been given a strike for fake peers. Current strikes: ${strikeData.fakePeer + 1}/${MAX_STRIKES}.`);
                     }
 
                     strikeData.lastSize = torrent.downloaded;

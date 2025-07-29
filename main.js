@@ -38,6 +38,7 @@ const removeAndSearch = (type, id) => new Promise((resolve, reject) => {
     switch (type) {
         case 'movie':
             log.info('pretend we deleted a movie');
+            resolve();
             // radarr.request(`queue/${id}`, 'DELETE', queryParams).then(resolve).catch(reject);
             break;
         case 'episode':
@@ -111,10 +112,10 @@ const check = async () => {
                 if (lastSeenMinutes < ((MAX_STRIKES * CHECK_INTERVAL) + 1)) { 
                     if (torrent.downloaded > strikeData.lastSize) {
                         strikeData.fakePeer = 0;
-                    } else {    
+                    } else { 
                         strikeData.fakePeer++;
                     }
-                    
+
                     strikeData.lastSize = torrent.downloaded;
                     strikes.set(downloadId, strikeData);
 
@@ -129,6 +130,8 @@ const check = async () => {
                         }
                     }
                 }
+
+                log.info(strikeData)
             } else {
                 log.error(`No torrent found for ${item.title} with ID ${item.downloadId}.`);
             }

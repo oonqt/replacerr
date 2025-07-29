@@ -37,12 +37,10 @@ const removeAndSearch = (type, id) => new Promise((resolve, reject) => {
 
     switch (type) {
         case 'movie':
-            log.info('pretend we deleted a movie');
-            resolve();
-            // radarr.request(`queue/${id}`, 'DELETE', queryParams).then(resolve).catch(reject);
+            radarr.request(`queue/${id}`, 'DELETE', queryParams).then(resolve).catch(reject);
             break;
         case 'episode':
-            // sonarr.request(`queue/${id}`, 'DELETE', queryParams).then(resolve).catch(reject);
+            sonarr.request(`queue/${id}`, 'DELETE', queryParams).then(resolve).catch(reject);
             break;
     }
 });
@@ -57,14 +55,14 @@ const check = async () => {
         movieQueue.forEach(movie => movie.type = 'movie');
         episodeQueue.forEach(episode => episode.type = 'episode');
 
-        log.info(`Found ${movieQueue.length} movies and ${episodeQueue.length} episodes in the queue. Torrents found: ${torrents.length}`);
-
         const globalQueue = [...movieQueue, ...episodeQueue];
-
+        
+        log.info(`Found ${movieQueue.length} movies and ${episodeQueue.length} episodes in the queue. Torrents found: ${torrents.length}`);
+        
         for (item of globalQueue) {
             const downloadId = item.downloadId;
             let torrent = torrents.find(torrent => item.downloadId.toLowerCase() === torrent.hash);
-
+            
             if (torrent) {
                 const lastSeenMinutes = ((Date.now() / 1000) - torrent.seen_complete) / 60;
                 const strikeData = strikes.get(downloadId) || { stalled: 0, fakePeer: 0, lastSize: 0 };

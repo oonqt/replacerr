@@ -130,8 +130,6 @@ const check = async () => {
                         }
                     }
                 }
-
-                log.info(strikeData)
             } else {
                 log.error(`No torrent found for ${item.title} with ID ${item.downloadId}.`);
             }

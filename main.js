@@ -124,6 +124,8 @@ const check = async () => {
                             await removeAndSearch(item.type, item.id);
 
                             strikes.delete(downloadId);
+                            log.info('Successfully removed. Torrent has been blacklisted and replacement search started.');
+                            await hook.send(`Removed \`${item.title} (${item.type})\` Fake peers advertising 100% availability were identified. A replacement search has been started.`).catch(log.error);
                         } catch (err) {
                             log.error('Failed to remove stalled download:', err);
                             await hook.send(`❌ Failed to remove \`${item.title} (${item.type})\`. Deletion attempt will be made again during next check.`).catch(log.error);

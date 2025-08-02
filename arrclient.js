@@ -1,8 +1,8 @@
 const axios = require('axios');
 
 class ArrClient {
-    constructor(url, key) {
-        this.appBase = `${url}/api/v3`;
+    constructor(url, key, version) {
+        this.appBase = `${url}/api/${version || 'v3'}`;
         this.apiKey = key;
     }
 

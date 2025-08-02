@@ -1,7 +1,8 @@
 # Replacerr
 #### A stalled download remover for the servarr stack (currently supports Radarr, Sonarr, and qBittorrent)
+### USE AT YOUR OWN RISK. CURRENT VERSION IS NOT AN OFFICIAL RELEASE AND IS STILL IN TESTING. I AM NOT RESPONSIBLE FOR ANY INCORRECTLY REMOVED TORRENTS FOR USING THE TOOL IN ITS CURRENT STATE
 
-#
+# 
 
 ### *Why not just use Declutarr or some other stalled download handler?*
 None of the other options I came across actually take into account the last seen complete parameter. I found this to be an issue as there could be an instance where a partially-downloaded torrent stalls out because the only seeder with the complete torrent goes offline for a period of time (ex. shut their computer off for the night). With the other handlers, they will just end up removing & blocklisting the torrent, allowing no time for the seeder to come back online. With Replacerr, partially-downloaded stalled torrents will be given a grace period defined in `MAX_LAST_SEEN` to allow the seeder to come back online. Only torrents that have been completely stalled since they were added to the torrent client will be removed with a strike-based system. It also has the ability to detect bot peers that join and advertise 100% availability to collect data, skewing the last seen parameter.
@@ -28,6 +29,7 @@ services:
     environment:
       - MAX_LAST_SEEN=1440 # Time in minutes 
       - MAX_STRIKES=3 
+      - IGNORE_TAG=Keep # Ignore torrents tagged with specific tag
       - CHECK_INTERVAL=5 # Time in minutes
       - DISCORD_WEBHOOK=https://discord.com/api/webhooks/****/**** # (OPTIONAL)
 
@@ -40,4 +42,7 @@ services:
 
       - SONARR_URL=http://sonarr:8989
       - SONARR_API_KEY=********
+
+      - READARR_URL=http://readarr:8989
+      - READARR_API_KEY=********
 ```

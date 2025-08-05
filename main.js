@@ -122,7 +122,7 @@ const check = async () => {
                 }
 
                 // for finding fake peers, we have to make sure the value we compare against lastSeen time is > than the maximum strikes * check interval (with 1 minute margin), a hard coded value could result in good torrents being removed if the check interval and max strike count multiplied together are lower than the hardcoded value
-                if (lastSeenMinutes < ((MAX_STRIKES * CHECK_INTERVAL) + 1)) {
+                if (lastSeenMinutes < ((MAX_STRIKES * CHECK_INTERVAL) + 1) && torrent.downloaded < torrent.size) {
                     if (torrent.downloaded > strikeData.lastSize) {
                         strikeData.fakePeer = 0;
                     } else {

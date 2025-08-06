@@ -79,7 +79,7 @@ const check = async () => {
         log.info(`Found ${movieQueue.length} movies, ${tvQueue.length} TV downloads, and ${bookQueue.length} books in the queue. Torrents found: ${torrents.length}`);
 
         for (item of globalQueue) {
-            const torrent = torrents.find(torrent => item.downloadId.toLowerCase() === torrent.hash);
+            const torrent = torrents.find(torrent => item.downloadId.toLowerCase() === torrent.hash && item.protocol === 'torrent');
             if (!torrent) {
                 log.error(`No torrent found for ${item.title} with ID ${item.downloadId}.`);
                 continue;

@@ -22,6 +22,10 @@ const { QBIT_URL,
     IGNORE_TAG
 } = process.env;
 
+const MOVIE = 'movie';
+const TV = 'tv';
+const BOOK = 'book';
+
 const radarr = RADARR_URL ? new ArrClient(RADARR_URL, RADARR_API_KEY, 'v3') : null;
 const sonarr = SONARR_URL ? new ArrClient(SONARR_URL, SONARR_API_KEY, 'v3') : null;
 const readarr = READARR_URL ? new ArrClient(READARR_URL, READARR_API_KEY, 'v1') : null;
@@ -31,9 +35,9 @@ const log = new Logger();
 const strikes = new Map();
 
 const enabledServices = [];
-if (radarr) enabledServices.push({ client: radarr, type: 'movie', version: 3 });
-if (sonarr) enabledServices.push({ client: sonarr, type: 'tv', version: 3 });
-if (readarr) enabledServices.push({ client: readarr, type: 'book', version: 1 });
+if (radarr) enabledServices.push({ client: radarr, type: MOVIE, version: 3 });
+if (sonarr) enabledServices.push({ client: sonarr, type: TV, version: 3 });
+if (readarr) enabledServices.push({ client: readarr, type: BOOK, version: 1 });
 
 const removeAndSearch = (type, id) => new Promise((resolve, reject) => {
     const queryParams = [
@@ -44,13 +48,13 @@ const removeAndSearch = (type, id) => new Promise((resolve, reject) => {
     ];
 
     switch (type) {
-        case 'movie':
+        case MOVIE:
             radarr.request(`queue/${id}`, 'DELETE', queryParams).then(resolve).catch(reject);
             break;
-        case 'tv':
+        case TV:
             sonarr.request(`queue/${id}`, 'DELETE', queryParams).then(resolve).catch(reject);
             break;
-        case 'book':
+        case BOOK:
             readarr.request(`queue/${id}`, 'DELETE', queryParams).then(resolve).catch(reject);
             break;
     }

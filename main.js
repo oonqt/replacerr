@@ -80,6 +80,10 @@ const check = async () => {
 
         for (item of globalQueue) {
             const torrent = torrents.find(torrent => item.downloadId.toLowerCase() === torrent.hash);
+            if (!torrent) {
+                log.error(`No torrent found for ${item.title} with ID ${item.downloadId}.`);
+                continue;
+            }
             const ignoreDownload = torrent.tags.split(',').map(tag => tag.trim()).includes(IGNORE_TAG);
             const downloadId = item.downloadId;
 
@@ -150,8 +154,6 @@ const check = async () => {
                         }
                     }
                 }
-            } else if (!ignoreDownload) {
-                log.error(`No torrent found for ${item.title} with ID ${item.downloadId}.`);
             }
         }
     } catch (err) {

@@ -74,12 +74,12 @@ const check = async () => {
         const tvQueue = sonarr ? queue[index++].map(episode => ({ ...episode, type: 'tv' })) : [];
         const bookQueue = readarr ? queue[index++].map(book => ({ ...book, type: 'book' })) : [];
 
-        const globalQueue = [...movieQueue, ...tvQueue, ...bookQueue];
+        const globalQueue = [...movieQueue, ...tvQueue, ...bookQueue].filter(item => item.protocol === 'torrent');
 
         log.info(`Found ${movieQueue.length} movies, ${tvQueue.length} TV downloads, and ${bookQueue.length} books in the queue. Torrents found: ${torrents.length}`);
 
         for (item of globalQueue) {
-            const torrent = torrents.find(torrent => item.downloadId.toLowerCase() === torrent.hash && item.protocol === 'torrent');
+            const torrent = torrents.find(torrent => item.downloadId.toLowerCase() === torrent.hash);
             if (!torrent) {
                 log.error(`No torrent found for ${item.title} with ID ${item.downloadId}.`);
                 continue;
